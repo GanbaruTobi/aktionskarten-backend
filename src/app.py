@@ -1,7 +1,7 @@
 from flask import Flask
 from os import environ
 
-from live import socketio
+from live import live
 from api import api
 from render import render
 from models import db
@@ -16,10 +16,9 @@ def create_app():
 
     db.init_app(app)
 
-    socketio.init_app(app)
-
     app.register_blueprint(api)
     app.register_blueprint(render)
+    app.register_blueprint(live)
 
     return app
 
@@ -30,4 +29,4 @@ if __name__ == "__main__":
     with app.app_context():
         db.create_all()
 
-    socketio.run(app)
+    app.run("0.0.0.0", threaded=True)

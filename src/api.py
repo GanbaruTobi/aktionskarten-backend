@@ -44,7 +44,13 @@ def maps():
         if ('name' not in request.json or 'bbox' not in request.json):
             abort(400)
 
-        m = Map(request.json['name'], request.json['bbox'])
+        name = request.json['name']
+
+        m = db.session.query(Map).get(name)
+        if (m):
+            abort(400)
+
+        m = Map(name, request.json['bbox'])
         db.session.add(m)
         db.session.commit()
         return jsonify(m.to_dict())

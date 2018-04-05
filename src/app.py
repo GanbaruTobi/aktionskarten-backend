@@ -3,6 +3,7 @@ from os import environ
 
 from live import socketio
 from api import api
+from frontend import frontend
 from render import render
 from models import db
 
@@ -20,14 +21,15 @@ def create_app():
 
     app.register_blueprint(api)
     app.register_blueprint(render)
+    app.register_blueprint(frontend)
 
     return app
 
 
 app = create_app()
 
-if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
+with app.app_context():
+    db.create_all()
 
+if __name__ == "__main__":
     socketio.run(app)

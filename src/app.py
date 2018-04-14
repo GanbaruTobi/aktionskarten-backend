@@ -19,9 +19,8 @@ def create_app():
 
     socketio.init_app(app)
 
-    app.register_blueprint(api)
-    app.register_blueprint(render)
-    app.register_blueprint(frontend)
+    for blueprint in [api, render, frontend]:
+        app.register_blueprint(blueprint)
 
     return app
 

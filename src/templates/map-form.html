@@ -1,0 +1,155 @@
+{% if m %}
+  {% extends "_map.html" %}
+{% else %}
+  {% extends "_base.html" %}
+{% endif %}
+
+{% block content %}
+<div class="container">
+  <h1 class="mt-2">
+    {% if m %}
+    Karte bearbeiten
+    {% else %}
+    Karte erstellen
+    {% endif %}
+  </h1>
+  <form id="map-form">
+    <div class="form-group row">
+      <label for="name" class="col-sm-2 col-form-label">Name</label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" name="name" value="{{m.name}}" placeholder="Name">
+      </div>
+    </div>
+    <div class="form-group row">
+      <label for="description" class="col-sm-2 col-form-label">Beschreibung</label>
+      <div class="col-sm-10">
+        <textarea class="form-control" name="description" rows="3" placeholder="Beschreibung der Events">{{m.description}}</textarea>
+      </div>
+    </div>
+    {% if m.bbox %}
+    <div class="form-group row">
+      <label for="place" class="col-sm-2 col-form-label">Kartenausschnitt</label>
+      <div class="col">
+        <input type="text" class="form-control-plaintext" readonly value="{{m.bbox|join(', ')}}" placeholder="Straße 14, Stadt">
+      </div>
+      <div class="col">
+        <a href="{{url_for('.maps_bbox', map_id=map_id)}}" class="btn btn-sm btn-secondary">Kartenausschnitt ändern</a>
+      </div>
+    </div>
+    {% endif %}
+    <div class="form-group row">
+      <label for="place" class="col-sm-2 col-form-label">Ort</label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" name="place" value="{{m.place}}" placeholder="Ort">
+      </div>
+    </div>
+    <div class="form-group row">
+      <label for="date" class="col-sm-2 col-form-label">Datum</label>
+      <div class="col">
+        <input type="date" class="form-control" name="date" value="{{now.strftime('%Y-%m-%d')}}">
+      </div>
+      <div class="col">
+        <input type="time" class="form-control" name="time" value="{{now.strftime('%H:%M')}}">
+      </div>
+    </div>
+    {#
+    <div class="form-group row">
+      <label for="design" class="col-sm-2 col-form-label">Design</label>
+      <div class="col-sm-10">
+        <select name="design" class="custom-select">
+          <option selected>
+            Wähle eine Farbkombination
+          </option>
+          <option value="1">
+            Rot/Schwarz
+          </option>
+          <option value="2">
+            Lila/Schwarz
+          </option>
+        </select>
+      </div>
+    </div>
+    #}
+    <div class="form-group row">
+      <label class="col-sm-2 col-form-label">Infos</label>
+      <div class="col-sm-10">
+        <p class="form-control-plaintext">Es ist ratsam weitere Infos wie EA-Nummer oder Twitter-Account auf der Karte in Form einer Legende zu hinterlegen.</p>
+      </div>
+    </div>
+    <div class="row" id="addInfo">
+      <p class="col offset-sm-2">
+        <button class="btn btn-secondary btn-sm">➕</button>
+      </p>
+    </div>
+    <div class="form-group row">
+      <div class="col">
+        {% set label = "Aktualisieren" if m else "Erstellen und Karten auswählen" %}
+        <button id="submit" type="submit" class="col-md-5 col-lg-4 float-right btn btn-primary btn-outline-secondary">{{label}}</button>
+      </div>
+    </div>
+  </form>
+  </div>
+{% endblock %}
+
+{% block js %}
+<script src="{{url_for('static', filename="utils.js")}}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.serializeJSON/2.9.0/jquery.serializejson.min.js"  crossorigin="anonymous"></script>
+<script>
+  var buttonElem = $('#addInfo button');
+
+  function genFormElem(key = '', value = '') {
+    var elem = $(`<div class="form-group row">
+      <div class="col offset-sm-2">
+        <input type="text" name="keys[]" class="form-control" placeholder="EA-Nummer, Twitter, ..." value="${key}">
+      </div>
+      <div class="col">
+        <input type="text" name="values[]" class="form-control" placeholder="030 69 55555, @Account, ..." value="${value}">
+      </div>
+      <div class="col">
+        <button class="btn btn-sm">×</button>
+      </div>
+    </div>`);
+
+    elem.find('button').on('click', function() {
+      elem.remove()
+      return false;
+    });
+
+    $('#addInfo').before(elem);
+
+    return elem;
+  }
+
+  {% if m and m.attributes %}
+    {% for key, value in m.attributes.iteritems() %}
+      genFormElem("{{key}}", "{{value}}");
+    {% endfor %}
+  {% endif %}
+
+  buttonElem.on('click', function(event) {
+    genFormElem();
+    return false;
+  });
+
+
+  $('#submit').on('click', function(event) {
+    let data = $('form').serializeJSON();
+    {% if m %}
+    patch("{{url_for('API.map_get', map_id=map_id)}}", data).then(function(resp) {
+      console.log("patch resp", resp)
+      if (resp.ok) {
+        window.location = resp.url.replace('api','')
+      }
+    });
+    {% else  %}
+    post("{{url_for('API.maps')}}", data).then(function(resp) {
+      console.log("post resp", resp)
+      if (resp.ok) {
+        window.location = resp.url.replace('api','')
+      }
+    });
+    {%endif%}
+    return false;
+  });
+</script>
+{% endblock %}

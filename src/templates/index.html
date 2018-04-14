@@ -1,0 +1,53 @@
+{% extends "_base.html" %}
+
+{% block content %}
+<section class="jumbotron text-center" style="background-color: #fff">
+  <div class="container">
+    <h1 class="jumbotron-heading">Kartographische Aktion</h1>
+    <p class="lead text-muted">Die Kartographische Aktion bietet Karten für Demos und politische Aktionen, bisher vor allem im Zusammenhang mit
+    antifaschistischen Blockaden oder auch Castortransporten. Die Karten helfen den Teilnehmer*innen dabei, sich am Ort des Geschehens zurechtzufinden und
+    ihre Aktionsziele zu erreichen.</p>
+    <p><a href="{{url_for('.maps_form')}}" class="btn btn-primary my-2 btn btn-outline-secondary">neue Karte erstellen</a></p>
+  </div>
+</section>
+
+{% if maps|length > 0 %}
+  <div class="py-2 bg-light">
+    <div class="container">
+      <div class="row">
+        <h3 class="col-md-12 text-center" style="color: #0005">aktuelle Karten</h3>
+      </div>
+      <div class="row">
+        {% for map in maps %}
+          <div class="col-md-5">
+            <div class="card mb-4 box-shadow">
+              <div class="card-img-top">
+                <a href="{{url_for('.maps_show', map_id=map.slug)}}" style="padding: 10px; font-size: 2em; color: #f008;text-align: center; display: table-cell; vertical-align: middle">
+                <img class="w-100" src="{{url_for('Render.map_export_png', map_id=map.slug, size='small')}}">
+                </a>
+              </div>
+              <div class="card-body">
+                <h5 class="card-title">{{map.name}}</h5>
+                <p class="card-text">
+                {{map.description}}
+                </p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">{{map.datetime}} @ {{map.place}}</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+<footer class="text-muted">
+  <div class="container">
+    <p class="float-right"><a href="#">Back to top</a></p>
+    <p>Fragen oder Anregungen? Du kannst uns auf <a href="">Mastodon</a> oder per <a href="">Mail</a> erreichen.</p>
+  </div>
+</footer>
+
+{% endblock %}

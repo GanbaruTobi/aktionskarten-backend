@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Aktionskarten</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity=
+    "sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{url_for('static', filename='dist/leaflet/leaflet.css')}}"/>
+    <link rel="stylesheet" href="{{url_for('static', filename='dist/leaflet.draw/leaflet.draw.css')}}"/>
+    <link rel="stylesheet" href="https://dwilhelm89.github.io/Leaflet.StyleEditor/css/Leaflet.StyleEditor.min.css" />
+    <link rel="stylesheet" href="https://kartographischeaktion.github.io/AktionskartenMarker/AktionskartenMarker.css" />
+
+    {% block css %}{% endblock %}
+
+<style>
+html,body{height:100%;}
+
+a.leaflet-draw-edit-text {
+  background-position: -270px -1px;
+}
+
+a.leaflet-draw-edit-remove {
+  background-position: -217px -1px !important;
+}
+
+a.leaflet-draw-edit-edit {
+  background-position: -134px -1px !important;
+}
+
+a.leaflet-draw-draw-marker {
+  background-position: -108px -1px !important;
+}
+
+a.leaflet-draw-draw-circle {
+  background-position: -81px -1px !important;
+}
+
+a.leaflet-draw-draw-polygon {
+  background-position: -26px -1px !important;
+}
+.leaflet-styleeditor-tooltip {
+  border: none;
+  background-color: rgba(68,68,68,.6);
+}
+.leaflet-styleeditor-tooltip {
+  color: #fff;
+}
+.leaflet-styleeditor-header, .leaflet-styleeditor-button {
+  background-color: transparent;
+}
+</style>
+  </head>
+  <body>
+    <header>
+      <div class="navbar navbar-expand-lg navbar-dark bg-dark box-shadow py-1">
+        <a href="{{url_for('.index')}}" class="navbar-brand d-flex align-items-center">
+          <img src="{{url_for('static', filename='img/logo.svg')}}" style="margin-right: 10px">
+          <strong>{{m.name}}</strong>
+        </a>
+        <button class="navbar-toggler btn-sm" type="button" data-toggle="collapse" data-target="#navbarToggler" aria-controls="navbarToggler" aria-expanded="false" aria-label="Toggle search">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+        <div class="collapse navbar-collapse py-0" id="navbarToggler">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              {% set url = url_for('.maps_show', map_id=map_id) %}
+              <a class="nav-link {{'active' if request.path == url else ''}}" href="{{url}}">Karte</a>
+            </li>
+            <li class="nav-item">
+              {% set url = url_for('.maps_form', map_id=map_id) %}
+              <a class="nav-link {{'active' if request.path == url else ''}}" href="{{url}}">Metadaten</a>
+            </li>
+          </ul>
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Share
+              </a>
+              <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" href="#">Admin-Link</a>
+                <a class="dropdown-item" href="#">Email</a>
+                <a class="dropdown-item" href="#">Embedded HTML</a>
+                <a class="dropdown-item" href="#">Twitter</a>
+              </div>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Export
+              </a>
+              <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" href="{{url_for('Render.map_export_pdf', map_id=map_id)}}">PDF</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="{{url_for('Render.map_export_png', map_id=map_id)}}">PNG</a>
+                <a class="dropdown-item" href="{{url_for('Render.map_export_png', map_id=map_id, size='small')}}">Thumbnail</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="{{url_for('Render.map_export_svg', map_id=map_id)}}">SVG</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="{{url_for('Render.map_export_geojson', map_id=map_id)}}">GeoJSON</a>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <main role="main">
+    {% block content %}{% endblock %}
+    {# if no content has been given, default back to map #}
+    {% if not self.content()|trim %}
+      <div id='map' class="" style="height: calc(100vh - 40px);"></div>
+    {% endif %}
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+    <!-- Leaflet -->
+    <script src="{{url_for('static', filename='dist/leaflet/leaflet-src.js')}}"></script>
+
+    <!-- Leaflet.Draw -->
+    <script src="{{url_for('static', filename='dist/leaflet.draw/leaflet.draw-src.js')}}"></script>
+
+    <!-- Leaflet.StyleEditor -->
+    <script src="https://dwilhelm89.github.io/Leaflet.StyleEditor/javascript/Leaflet.StyleEditor.min.js"></script>
+
+    <!-- AktionskartenMarker -->
+    <script src="https://kartographischeaktion.github.io/AktionskartenMarker/AktionskartenMarker.js"></script>
+
+    <!-- Helper functions for HTTP-Request and other stuff -->
+    <script src="{{ url_for('static', filename='js/leaflet.extended.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/actionmap.js') }}"></script>
+
+    {% block js %}{% endblock %}
+  </body>
+</html>

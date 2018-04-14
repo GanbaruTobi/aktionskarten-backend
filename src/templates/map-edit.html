@@ -1,0 +1,44 @@
+{% extends "_map.html" %}
+
+{% block js %}
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+
+<script>
+$(function() {
+  var map = new ActionMap('{{url_for('.index', _external=True)}}', '{{map_id}}', 'map');
+
+  map.draw = true;
+  map.styleEditor = true;
+
+  map.load('grid');
+  map.load('features');
+
+  // create intro popup if there are no features
+  {% if m.features|length == 0 %}
+  map.on('gridLoaded', data => {
+    var bounds = map.grid.getBounds();
+    map.grid.bindPopup(`
+      <div class="container">
+        <div class="row">
+        <p>
+          Der Ausschnitt auf der Karte stellt deine Aktionskarte dar.
+          Noch ist sie leer, aber mittels der Toolbar rechts, kannst
+          du sie mit Leben füllen. Klicke dazu einfach auf die Buttons.
+          <br /><br />
+          Du kannst Daten wie Ort, allgemeine Infos oder den
+          Kartenausschnitt selbst über den Metadaten-Link in der
+          Navigationsleiste nachträglich ändern.
+          <br /><br />
+          <b>Tip:</b>
+          Benutz die Export-Funktion um am Ende die Karte als Bild für
+          soziale Netzwerke / Messenger, PDF zum Drucken oder SVG
+          weiterverwerden zu können.
+        </p>
+        </div>
+      </div>
+    `).openPopup(bounds.getCenter());
+  });
+  {% endif %}
+});
+</script>
+{% endblock %}

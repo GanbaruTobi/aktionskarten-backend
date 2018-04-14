@@ -1,0 +1,52 @@
+{% extends "_map.html" %}
+
+{% block js %}
+<script>
+$(function() {
+  var map = new ActionMap('{{url_for('.index', _external=True)}}', '{{map_id}}', 'map');
+
+  map.mode = 'bbox';
+  map.center()
+  map.load('grid');
+  map.load('features');
+
+  var drawer = new L.Draw.Rectangle(map._map);
+  drawer.enable();
+    map.setTooltip(`
+        <div class="container">
+          <p>
+            Markiere ein DIN A4-Rechteck als Grundlage der Aktionskarte.
+          </p>
+        </div>
+    `)
+
+
+  var bbox;
+  map.on('bboxChanged', e => {
+    // load grid for new bbox
+    get('{{url_for('API.grid_get', bbox='')}}' + e.bbox.join(',')).then(data => {
+      map.set('grid', data)
+    })
+
+    map.setTooltip(`
+      <button type="button" id="redraw" class="btn btn-secondary">Neuzeichnen</button>
+      <button type="button" id="submit" class="btn btn-primary">Weiter</button>
+    `)
+
+    // enable drawer for new try
+    $('#redraw').on('click', event => {
+      drawer.enable()
+    });
+
+    // save bbox and redirect
+    $('#submit').on('click', event => {
+      patch('{{url_for('API.map_get', map_id=map_id)}}', {bbox: e.bbox}).then(resp => {
+        resp.json().then(data => {
+          window.location = "{{url_for('.maps_show', map_id=map_id)}}";
+        });
+      });
+    });
+  });
+});
+</script>
+{% endblock %}

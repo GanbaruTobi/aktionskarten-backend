@@ -11,7 +11,7 @@ function post(url, data) {
     method: "POST",
     body: JSON.stringify(data),
     headers: new Headers({"Content-Type": "application/json"})
-  }).then((resp) => window.asdf=(resp))
+  }).then((resp) => resp)
   .catch(console.err);
 }
 
@@ -42,9 +42,9 @@ function del(url, data) {
   .catch(console.err);
 }
 
-function getStyle(options) {
-  var validKeys = ['color', 'weight', 'opacity', 'fillColor', 'fillOpacity', 'dashArray', 'icon.options.iconColor', 'icon.options.iconSize', 'icon.options.icon'],
-      style = {};
+function filterProperties(options) {
+  var validKeys = ['label', 'radius', 'color', 'weight', 'opacity', 'fillColor', 'fillOpacity', 'dashArray', 'icon.options.iconColor', 'icon.options.iconSize', 'icon.options.icon'],
+      props = {};
 
   validKeys.forEach(function(item) {
     var data = options;
@@ -60,11 +60,11 @@ function getStyle(options) {
     }
 
     if (data) {
-      style[key] = data;
+      props[key] = data;
     }
   });
 
-  return style;
+  return props;
 }
 
 

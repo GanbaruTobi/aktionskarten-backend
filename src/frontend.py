@@ -1,22 +1,38 @@
-import re
+from flask import Blueprint, render_template, redirect, url_for
+from datetime import datetime
+from models import Map
 
-from flask import Blueprint, request, jsonify, abort, render_template, redirect, url_for
-from flask_cors import CORS
-from werkzeug.security import safe_str_cmp
-from models import db, Map, Feature
-from geojson import FeatureCollection
 
 frontend = Blueprint('frontend', __name__)
 
-@frontend.route('/maps/')
+
+@frontend.route('/')
+def index():
+    return render_template('index.html', maps=Map.all())
+
+
 @frontend.route('/maps')
-def overview():
-    return 'TODO overview'
+@frontend.route('/maps/<string:map_id>/edit')
+def maps_form(map_id=None):
+    m = None
+    if (map_id):
+        m = Map.get(map_id)
+    now = datetime.utcnow()
+    return render_template('map-form.html', map_id=map_id, m=m, now=now)
+
+
+@frontend.route('/maps/<string:map_id>/edit/bbox')
+def maps_bbox(map_id=None):
+    m = Map.get(map_id)
+    return render_template('map-bbox.html', map_id=map_id, m=m)
+
 
 @frontend.route('/maps/<string:map_id>/')
 @frontend.route('/maps/<string:map_id>')
-def show_map(map_id):
-    m = db.session.query(Map).get(map_id)
-    if (m):
-        return render_template('map.html', map_id=map_id)
-    return render_template('create_map.html', map_id=map_id) 
+def maps_show(map_id=None):
+    m = Map.get(map_id)
+    if (not m):
+        return redirect(url_for('.maps_form'))
+    elif (not m.bbox):
+        return redirect(url_for('.maps_bbox', map_id=map_id))
+    return render_template('map-edit.html', map_id=map_id, m=m)
